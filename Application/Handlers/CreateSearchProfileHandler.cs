@@ -30,6 +30,7 @@ namespace Application.Handlers
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+                throw ex;
             }
 
             return new OkObjectResult(guid);

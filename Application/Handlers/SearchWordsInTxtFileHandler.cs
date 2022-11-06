@@ -23,7 +23,7 @@ namespace Application.Handlers
 
                     IList<string> searchProfile = _memoryCache.Get<List<string>>(request.searchProfileId);
 
-                    char[] separators = new char[] { ' ', '.', ',', ':', ';', '\n' };
+                    char[] separators = new char[] { ' ', '.', ',', ':', ';', '\n', '\r' };
 
                     IList<string> result = new List<string>();
 
@@ -35,9 +35,11 @@ namespace Application.Handlers
                                 IList<int> indexes = new List<int>();
                                 for (var index = 0; index < content.Length;)
                                 {
-                                    index = content.IndexOf(words, index + 1);
+                                    
                                     if (request.ignoreCase)
-                                        index = content.ToLower().IndexOf(words.ToLower(), index);
+                                        index = content.IndexOf(words, index, StringComparison.OrdinalIgnoreCase);
+                                    else
+                                        index = content.IndexOf(words, index);
                                     if (index == -1)
                                         break;
                                 indexes.Add(index);
@@ -46,6 +48,9 @@ namespace Application.Handlers
 
                                 foreach (var id in indexes)
                                 {
+                                    if (indexes[0] == 0)
+                                        return new OkObjectResult(result);
+
                                 IList<string> items = content.Substring(0, id - 1)
                                     .Split(separators, StringSplitOptions.RemoveEmptyEntries).ToList();
 
@@ -71,9 +76,11 @@ namespace Application.Handlers
                                 IList<int> indexes = new List<int>();
                                 for (var index = 0; index < content.Length;)
                                 {
-                                    index = content.IndexOf(words, index + 1) + words.Length;
+                                    
                                     if (request.ignoreCase)
-                                        index = content.ToLower().IndexOf(words.ToLower(), index) + words.Length;
+                                        index = content.IndexOf(words, index, StringComparison.OrdinalIgnoreCase) + words.Length;
+                                    else
+                                        index = content.IndexOf(words, index + 1) + words.Length;
                                     if (index == -1 + words.Length)
                                         break;
                                     indexes.Add(index);
@@ -81,6 +88,9 @@ namespace Application.Handlers
 
                                 foreach (var id in indexes)
                                 {
+                                    if (indexes[0] == content.Length)
+                                        return new OkObjectResult(result);
+
                                     IList<string> items = content.Substring(id)
                                         .Split(separators, StringSplitOptions.RemoveEmptyEntries).ToList();
 
@@ -104,10 +114,13 @@ namespace Application.Handlers
                             foreach (var words in searchProfile)
                             {
                                 IList<string> lines = content.Split('\n');
-                                IEnumerable<string> linesWithWordsFromSearchProfile = lines.Where(w => w.Contains(words));
+                                IList<string> linesWithWordsFromSearchProfile = new List<string>();
 
                                 if (request.ignoreCase)
-                                    linesWithWordsFromSearchProfile = lines.Where(w => w.ToLower().Contains(words.ToLower()));
+                                    linesWithWordsFromSearchProfile =
+                                        lines.Where(w => w.ToLower().Contains(words.ToLower())).ToList();
+                                else
+                                    lines.Where(w => w.Contains(words)).ToList();
 
                                 IList<int> indexesOfLinesToSearchIn = new List<int>();
                                 int startOfSearchProfilesInLine = 0;
@@ -117,45 +130,46 @@ namespace Application.Handlers
                                 {
                                     if (request.direction == "top" && lines.IndexOf(line) > 0)
                                         indexesOfLinesToSearchIn.Add(lines.IndexOf(line) - 1);
-                                    else if (request.direction == "botttom" && lines.IndexOf(line) < lines.Count)
+                                    else if (request.direction == "bottom" && lines.IndexOf(line) < lines.Count - 1)
                                         indexesOfLinesToSearchIn.Add(lines.IndexOf(line) + 1);
 
-                                    startOfSearchProfilesInLine = line.IndexOf(words);
-                                    endOfSearchProfilesInLine = line.IndexOf(words) + words.Length;
-                                }
+                                    startOfSearchProfilesInLine = line.IndexOf(words, StringComparison.OrdinalIgnoreCase);
+                                    endOfSearchProfilesInLine = line.IndexOf(words, StringComparison.OrdinalIgnoreCase) + words.Length;
 
-                                if (indexesOfLinesToSearchIn.Count > 0)
-                                {
-                                    foreach (var id in indexesOfLinesToSearchIn)
+                                    if (indexesOfLinesToSearchIn.Count > 0)
                                     {
-                                        IList<string> wordsList = lines[id].Split(" ");
-                                        int lenght = 0;
-                                        for (int i = 0; i < request.maxWordsCount;)
+                                        foreach (var id in indexesOfLinesToSearchIn)
                                         {
-
-                                            foreach (var word in wordsList)
+                                            IList<string> wordsList = lines[id].Split(" ");
+                                            int lenght = 0;
+                                            for (int i = 0; i < request.maxWordsCount;)
                                             {
-                                                int indexOfCharacter = 0;
-                                                foreach (var character in word)
-                                                {
-                                                    indexOfCharacter++;
-                                                    lenght++;
-                                                    if (lenght >= startOfSearchProfilesInLine &&
-                                                        lenght <= endOfSearchProfilesInLine)
-                                                    {
-                                                        if (!result.Contains(word))
-                                                            result.Add(word);
-                                                    }
 
-                                                    if (indexOfCharacter == word.Length)
+                                                foreach (var word in wordsList)
+                                                {
+                                                    int indexOfCharacter = 0;
+                                                    foreach (var character in word)
+                                                    {
+                                                        indexOfCharacter++;
                                                         lenght++;
+                                                        if (lenght >= startOfSearchProfilesInLine &&
+                                                            lenght <= endOfSearchProfilesInLine)
+                                                        {
+                                                            if (!result.Contains(word))
+                                                                result.Add(word);
+                                                        }
+
+                                                        if (indexOfCharacter == word.Length)
+                                                            lenght++;
+                                                    }
                                                 }
+                                                i++;
                                             }
-                                            i++;
                                         }
                                     }
                                 }
-                            }
+
+                        }
                             break;
                         default:
                             return new OkObjectResult("Wrong direction name");
@@ -168,7 +182,7 @@ namespace Application.Handlers
             {
                 Console.WriteLine("Exception message:");
                 Console.WriteLine(ex.Message);
-                return new OkObjectResult("Something went wrong.");
+                throw ex;
             }
         }
     }
