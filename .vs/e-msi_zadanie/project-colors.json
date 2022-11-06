@@ -1,0 +1,26 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "b317267d-9751-494c-81c3-226d0ccc4b9d": {
+      "ProjectGuid": "b317267d-9751-494c-81c3-226d0ccc4b9d",
+      "DisplayName": "e-msi_zadanie",
+      "ColorIndex": 0
+    },
+    "47ef517b-f46a-4a09-91d2-814711d4fb74": {
+      "ProjectGuid": "47ef517b-f46a-4a09-91d2-814711d4fb74",
+      "DisplayName": "Application",
+      "ColorIndex": 1
+    },
+    "4e567858-27d2-4e64-848c-ab52aa819e59": {
+      "ProjectGuid": "4e567858-27d2-4e64-848c-ab52aa819e59",
+      "DisplayName": "Domain",
+      "ColorIndex": 2
+    },
+    "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3": {
+      "ProjectGuid": "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3",
+      "DisplayName": "Miscellaneous Files",
+      "ColorIndex": -1
+    }
+  },
+  "NextColorIndex": 3
+}

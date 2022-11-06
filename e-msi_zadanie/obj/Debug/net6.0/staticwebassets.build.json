@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "IUIfhZMaaBPt14ocJLzSxGoTQFZBDjviXdpAmTK7+aM=",
+  "Source": "e-msi_zadanie",
+  "BasePath": "_content/e-msi_zadanie",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
